@@ -27,6 +27,15 @@ SELECT user_id_has_sent_max_messages_to_recipient(25);
 
 
 
+
+2. Создать процедуру, которая проверяет владельца фотографий, которые указаны в качестве
+основных фотографий пользователей в таблице профилей. Если пользователь в профилях не
+является владельцем своей основной фотографии, тогда для него нужно записать NULL в
+столбце main_photo_id.
+
+
+
+
 CREATE OR REPLACE PROCEDURE check_user_by_photo()
 
 LANGUAGE PLPGSQL AS
@@ -80,4 +89,7 @@ EXECUTE FUNCTION  update_users_photo_trigger();
 SELECT id FROM photo WHERE owner_id = 25;
 UPDATE profiles SET main_photo_id = 97 WHERE user_id = 25;
 SELECT user_id, main_photo_id FROM profiles WHERE user_id = 25;
+
 DROP TRIGGER IF EXISTS check_users_photo_to_update ON profiles;
+
+
