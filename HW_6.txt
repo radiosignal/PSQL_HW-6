@@ -20,3 +20,64 @@ $$
 LANGUAGE SQL;
 
 SELECT user_id_has_sent_max_messages_to_recipient(25);
+2. Создать процедуру, которая проверяет владельца фотографий, которые указаны в качестве
+основных фотографий пользователей в таблице профилей. Если пользователь в профилях не
+является владельцем своей основной фотографии, тогда для него нужно записать NULL в
+столбце main_photo_id.
+
+
+
+CREATE OR REPLACE PROCEDURE check_user_by_photo()
+
+LANGUAGE PLPGSQL AS
+$$
+DECLARE owner_photo RECORD;
+BEGIN
+	FOR owner_photo IN
+		SELECT profiles.user_id
+		FROM profiles
+		JOIN photo
+		ON profiles.main_photo_id = photo.id
+		WHERE photo.owner_id !=  profiles.user_id
+		LOOP
+			UPDATE profiles SET main_photo_id = NULL WHERE user_id = owner_photo.user_id;
+		END LOOP;
+	COMMIT;
+END;
+$$;
+
+	
+
+CALL check_user_by_photo();
+SELECT * FROM profiles WHERE main_photo_id  IS NOT NULL;
+
+
+3. Создать триггер на обновление для таблицы профилей, который не разрешает внести в
+столбец main_photo_id идентификатор фотографии, если данный пользователь не является
+ее владельцем. Проверить работу триггера вставкой записей с корректными и некорректными
+значениями.
+
+CREATE OR REPLACE FUNCTION update_users_photo_trigger()
+RETURNS TRIGGER AS
+
+$$
+DECLARE owner_photo INT;
+BEGIN
+owner_photo := (SELECT owner_id FROM photo WHERE id = NEW.main_photo_id);
+IF NEW.user_id != owner_photo THEn
+RAISE EXCEPTION 'User with ID: % has no photo corresponds to ID: %', NEW.user_id, NEW.main_photo_id;
+END IF;
+RETURN NEW;
+END;
+$$
+LANGUAGE PLPGSQL;
+
+CREATE TRIGGER check_users_photo_to_update BEFORE UPDATE ON profiles
+	FOR EACH ROW
+EXECUTE FUNCTION  update_users_photo_trigger();
+
+
+SELECT id FROM photo WHERE owner_id = 25;
+UPDATE profiles SET main_photo_id = 97 WHERE user_id = 25;
+SELECT user_id, main_photo_id FROM profiles WHERE user_id = 25;
+DROP TRIGGER IF EXISTS check_users_photo_to_update ON profiles;
