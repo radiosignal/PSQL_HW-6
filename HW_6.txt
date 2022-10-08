@@ -105,4 +105,8 @@ ORDER BY id;
 
 UPDATE changeable_video_view
 SET description = 'mutable' WHERE id = 5;
-SELECT description FROM video WHERE id = 5;
+SELECT description FROM changeable_video_view WHERE id = 5;
+
+UPDATE changeable_video_view
+SET description = 'immutable' WHERE id = 5;
+SELECT description FROM unchangeable_video_view WHERE id = 5;
