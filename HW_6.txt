@@ -20,5 +20,3 @@ $$
 LANGUAGE SQL;
 
 SELECT user_id_has_sent_max_messages_to_recipient(25);
-
-
