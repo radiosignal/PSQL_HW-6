@@ -93,3 +93,16 @@ SELECT user_id, main_photo_id FROM profiles WHERE user_id = 25;
 DROP TRIGGER IF EXISTS check_users_photo_to_update ON profiles;
 
 
+4. Создать два представления для таблицы видео. Одно представление должно быть
+неизменяемым, другое - изменяемым. Проверить изменяемость второго представления
+
+CREATE OR REPLACE VIEW changeable_video_view AS
+SELECT * FROM video;
+CREATE OR REPLACE VIEW unchangeable_video_view AS
+SELECT * FROM video
+GROUP BY id
+ORDER BY id;
+
+UPDATE changeable_video_view
+SET description = 'mutable' WHERE id = 5;
+SELECT description FROM video WHERE id = 5;
