@@ -20,12 +20,19 @@ $$
 LANGUAGE SQL;
 
 SELECT user_id_has_sent_max_messages_to_recipient(25);
+2. Создать процедуру, которая проверяет владельца фотографий, которые указаны в качестве
+основных фотографий пользователей в таблице профилей. Если пользователь в профилях не
+является владельцем своей основной фотографии, тогда для него нужно записать NULL в
+столбце main_photo_id.
+
+
 
 
 2. Создать процедуру, которая проверяет владельца фотографий, которые указаны в качестве
 основных фотографий пользователей в таблице профилей. Если пользователь в профилях не
 является владельцем своей основной фотографии, тогда для него нужно записать NULL в
 столбце main_photo_id.
+
 
 
 
@@ -52,6 +59,7 @@ $$;
 
 CALL check_user_by_photo();
 SELECT * FROM profiles WHERE main_photo_id  IS NOT NULL;
+
 
 3. Создать триггер на обновление для таблицы профилей, который не разрешает внести в
 столбец main_photo_id идентификатор фотографии, если данный пользователь не является
@@ -81,3 +89,24 @@ EXECUTE FUNCTION  update_users_photo_trigger();
 SELECT id FROM photo WHERE owner_id = 25;
 UPDATE profiles SET main_photo_id = 97 WHERE user_id = 25;
 SELECT user_id, main_photo_id FROM profiles WHERE user_id = 25;
+
+DROP TRIGGER IF EXISTS check_users_photo_to_update ON profiles;
+
+
+4. Создать два представления для таблицы видео. Одно представление должно быть
+неизменяемым, другое - изменяемым. Проверить изменяемость второго представления
+
+CREATE OR REPLACE VIEW changeable_video_view AS
+SELECT * FROM video;
+CREATE OR REPLACE VIEW unchangeable_video_view AS
+SELECT * FROM video
+GROUP BY id
+ORDER BY id;
+
+UPDATE changeable_video_view
+SET description = 'mutable' WHERE id = 5;
+SELECT description FROM changeable_video_view WHERE id = 5;
+
+UPDATE changeable_video_view
+SET description = 'immutable' WHERE id = 5;
+SELECT description FROM unchangeable_video_view WHERE id = 5;
